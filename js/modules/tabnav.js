@@ -1,22 +1,42 @@
-export default function initTabNav() {
-  const tabMenu = document.querySelectorAll('[data-tab="menu"] li');
-  const tabContent = document.querySelectorAll('[data-tab="content"] section');
+export default function initTooltip() {
+  const tooltips = document.querySelectorAll("[data-tooltip]");
 
-  if (tabMenu.length && tabContent.length) {
-    tabContent[0].classList.add("ativo");
+  const onMouseMove = {
+    handleEvent(event) {
+      this.tooltipBox.style.top = `${event.pageY + 20}px`;
+      this.tooltipBox.style.left = `${event.pageX + 20}px`;
+    },
+  };
 
-    function activeTab(index) {
-      tabContent.forEach((section) => {
-        section.classList.remove("ativo");
-      });
-      const direcao = tabContent[index].dataset.anime;
-      tabContent[index].classList.add("ativo", direcao);
-    }
+  const onMouseLeave = {
+    handleEvent() {
+      this.tooltipBox.remove();
+      this.element.removeEventListener("mouseleave", onMouseLeave);
+      this.element.removeEventListener("mousemove", onMouseMove);
+    },
+  };
 
-    tabMenu.forEach((itemMenu, index) => {
-      itemMenu.addEventListener("click", () => {
-        activeTab(index);
-      });
-    });
+  function criarTooltipBox(element) {
+    const tooltipBox = document.createElement("div");
+    const text = element.getAttribute("aria-label");
+    tooltipBox.classList.add("tooltip");
+    tooltipBox.innerText = text;
+    document.body.appendChild(tooltipBox);
+    return tooltipBox;
   }
+
+  function onMouseOver() {
+    const tooltipBox = criarTooltipBox(this);
+
+    onMouseMove.tooltipBox = tooltipBox;
+    this.addEventListener("mousemove", onMouseMove);
+
+    onMouseLeave.tooltipBox = tooltipBox;
+    onMouseLeave.element = this;
+    this.addEventListener("mouseleave", onMouseLeave);
+  }
+
+  tooltips.forEach((item) => {
+    item.addEventListener("mouseover", onMouseOver);
+  });
 }
